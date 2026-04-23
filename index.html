@@ -2019,24 +2019,11 @@
 <script>
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp0pjgE6l3QRcx108nTgLEGKHhirUbfGuLyzwZsKZG4biKg9RxMTR6otZ2dWoOZszqfw/exec';
 
-  // Send data to Google Sheets via form submission
+  // Send data to Google Sheets via GET (image pixel - no CORS issues)
   function sendToSheet(data) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GOOGLE_SCRIPT_URL;
-    form.target = 'hidden-iframe';
-    
-    for (const key in data) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = data[key];
-      form.appendChild(input);
-    }
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    const params = new URLSearchParams(data).toString();
+    const img = new Image();
+    img.src = GOOGLE_SCRIPT_URL + '?' + params;
   }
 
   // Track studio link clicks
@@ -2074,7 +2061,7 @@
     setTimeout(() => {
       document.getElementById('vipForm').style.display = 'none';
       document.getElementById('vipSuccess').classList.add('show');
-    }, 1000);
+    }, 1500);
   }
 </script>
 
@@ -2144,6 +2131,5 @@
     document.getElementById('photoLightbox').classList.remove('active');
   }
 </script>
-<iframe name="hidden-iframe" style="display:none;"></iframe>
 </body>
 </html>
