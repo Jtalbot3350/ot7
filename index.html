@@ -2019,18 +2019,33 @@
 <script>
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp0pjgE6l3QRcx108nTgLEGKHhirUbfGuLyzwZsKZG4biKg9RxMTR6otZ2dWoOZszqfw/exec';
 
+  // Send data to Google Sheets via form submission
+  function sendToSheet(data) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SCRIPT_URL;
+    form.target = 'hidden-iframe';
+    
+    for (const key in data) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = data[key];
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
   // Track studio link clicks
   function trackStudioClick(studioName) {
-    fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'traffic',
-        studio: studioName,
-        timestamp: new Date().toISOString()
-      })
-    }).catch(() => {});
+    sendToSheet({
+      type: 'traffic',
+      studio: studioName,
+      timestamp: new Date().toISOString()
+    });
   }
 
   // Submit lead form to Google Sheets
@@ -2048,26 +2063,18 @@
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
-    fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'lead',
-        name: name,
-        phone: phone,
-        email: email,
-        timestamp: new Date().toISOString()
-      })
-    })
-    .then(() => {
-      document.getElementById('vipForm').style.display = 'none';
-      document.getElementById('vipSuccess').classList.add('show');
-    })
-    .catch(() => {
-      document.getElementById('vipForm').style.display = 'none';
-      document.getElementById('vipSuccess').classList.add('show');
+    sendToSheet({
+      type: 'lead',
+      name: name,
+      phone: phone,
+      email: email,
+      timestamp: new Date().toISOString()
     });
+
+    setTimeout(() => {
+      document.getElementById('vipForm').style.display = 'none';
+      document.getElementById('vipSuccess').classList.add('show');
+    }, 1000);
   }
 </script>
 
@@ -2137,5 +2144,6 @@
     document.getElementById('photoLightbox').classList.remove('active');
   }
 </script>
+<iframe name="hidden-iframe" style="display:none;"></iframe>
 </body>
 </html>
