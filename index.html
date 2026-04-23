@@ -2085,24 +2085,28 @@
 <script>
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp0pjgE6l3QRcx108nTgLEGKHhirUbfGuLyzwZsKZG4biKg9RxMTR6otZ2dWoOZszqfw/exec';
 
-  // Send data to Google Sheets - tries multiple methods for compatibility
   function sendToSheet(data) {
-    const params = new URLSearchParams(data).toString();
-    const url = GOOGLE_SCRIPT_URL + '?' + params;
+    var params = '';
+    for (var key in data) {
+      if (params !== '') params += '&';
+      params += encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+    }
+    var url = GOOGLE_SCRIPT_URL + '?' + params;
     
-    // Method 1: fetch GET
-    try {
-      fetch(url, { mode: 'no-cors' });
-    } catch(e) {}
+    // Method 1: script tag (works on all mobile browsers)
+    var s = document.createElement('script');
+    s.src = url;
+    document.body.appendChild(s);
+    setTimeout(function() { try { document.body.removeChild(s); } catch(e) {} }, 5000);
     
-    // Method 2: image pixel (fallback)
-    try {
-      const img = new Image();
-      img.src = url;
-    } catch(e) {}
+    // Method 2: image pixel
+    var img = new Image();
+    img.src = url;
+    
+    // Method 3: fetch
+    try { fetch(url, { mode: 'no-cors' }); } catch(e) {}
   }
 
-  // Track studio link clicks
   function trackStudioClick(studioName) {
     sendToSheet({
       type: 'traffic',
@@ -2111,18 +2115,17 @@
     });
   }
 
-  // Submit lead form to Google Sheets
   function submitVIP() {
-    const name = document.getElementById('vipName').value;
-    const email = document.getElementById('vipEmail').value;
-    const phone = document.getElementById('vipPhone').value;
+    var name = document.getElementById('vipName').value;
+    var email = document.getElementById('vipEmail').value;
+    var phone = document.getElementById('vipPhone').value;
 
     if (!name || !email || !phone) {
       alert('Please fill in all fields.');
       return;
     }
 
-    const btn = document.querySelector('.vip-submit');
+    var btn = document.querySelector('.vip-submit');
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
@@ -2134,7 +2137,7 @@
       timestamp: new Date().toISOString()
     });
 
-    setTimeout(() => {
+    setTimeout(function() {
       document.getElementById('vipForm').style.display = 'none';
       var success = document.getElementById('vipSuccess');
       if (success) {
